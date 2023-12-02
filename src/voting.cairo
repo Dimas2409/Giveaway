@@ -66,3 +66,55 @@ mod Vote {
         // Read the registration status of the address from storage
         registered_voter::read(address)
     }
+
+    // ------
+    // External functions
+    // ------
+
+    // @dev Submit a vote (0 for No and 1 for Yes)
+    // @param vote (u8): vote value, 0 for No and 1 for Yes
+    // @return () : updates the storage with the vote count and marks the voter as not allowed to vote again
+    #[external]
+    fn vote(vote: u8) {
+        // Check if the vote is valid (0 or 1)
+        assert(vote == 0_u8 | vote == 1_u8, 'VOTE_0_OR_1');
+
+        // Know if a voter has already voted and continue if they have not voted
+        let caller : ContractAddress = get_caller_address();
+        assert_allowed(caller);
+
+        // Mark that the voter has already voted and update in the storage
+        can_vote::write(caller, false);
+
+        // Update the vote count in the storage depending on the vote value (0 or 1)
+        if (vote == 0_u8) {
+            no_votes::write(no_votes::read() + 1_u8);
+        }
+        if (vote == 1_u8) {
+            yes_votes::write(yes_votes::read() + 1_u8);
+        }
+    }
+
+    // ------
+    // Internal Functions
+    // ------
+
+    // @dev Assert if an address is allowed to vote or not
+    // @param address (ContractAddress): address of the user
+    // @return () : if the user can vote; otherwise, throw an error message and revert the transaction
+    fn assert_allowed(address: ContractAddress) {
+        // Read the voting status of the user from storage
+        let is_voter: bool = registered_voter::read(address);
+        let can_vote: bool = can_vote::read(address);
+
+        // Check if the user can vote otherwise throw an error message and revert the transaction
+        assert(is_voter, 'USER_NOT_REGISTERED');
+        assert(can_vote, 'USER_ALREADY_VOTED');
+    }
+
+    // @dev Internal function to prepare the list of voters. Index can be the length of the array.
+    // @param registered_addresses (Array<ContractAddress>): array with the addresses of registered voters
+    // @param index (usize): index of the current voter to be processed
+    fn _register_voters(
+        voter_1: ContractAddress, voter_2: ContractAddress, voter_3: ContractAddress
+        ) {
