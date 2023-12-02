@@ -126,7 +126,7 @@ mod Vote {
         registered_voter::write(voter_2, true);
         can_vote::write(voter_2, true);
 
-        // Register the third voter
+        // Register the 3rd voter
         registered_voter::write(voter_3, true);
         can_vote::write(voter_3, true);
     }
