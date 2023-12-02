@@ -21,6 +21,4 @@ mod simple_storage {
         num
     }
 
-
-
 }
